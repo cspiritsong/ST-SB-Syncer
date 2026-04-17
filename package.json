@@ -1,0 +1,12 @@
+{
+  "name": "st-sb-syncer",
+  "version": "1.0.0",
+  "description": "Sync data between SillyTavern and SillyBunny",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
