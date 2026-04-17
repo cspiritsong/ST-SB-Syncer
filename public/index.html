@@ -286,15 +286,24 @@
 
     .log-msg.warn { color: #fb923c; }
 
-    .btn-sync.btn-ext {
+    .btn-sync.btn-ext-st-to-sb {
       background: linear-gradient(135deg, #166534, #22c55e);
       color: #fff;
       box-shadow: 0 2px 12px rgba(34, 197, 94, 0.25);
-      grid-column: 1 / -1;
     }
 
-    .btn-sync.btn-ext:hover:not(:disabled) {
+    .btn-sync.btn-ext-st-to-sb:hover:not(:disabled) {
       box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-sync.btn-ext-sb-to-st {
+      background: linear-gradient(135deg, #0f766e, #14b8a6);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(20, 184, 166, 0.25);
+    }
+
+    .btn-sync.btn-ext-sb-to-st:hover:not(:disabled) {
+      box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
     }
 
     .ext-note {
@@ -344,12 +353,16 @@
   <div class="card">
     <div class="card-title">Extensions</div>
     <div class="sync-buttons">
-      <button class="btn-sync btn-ext" id="btn-ext" onclick="startExtSync()">
-        <span class="btn-label-main">Sync Extensions (ST → SillyBunny)</span>
-        <span class="btn-label-sub">Clone missing extensions from GitHub</span>
+      <button class="btn-sync btn-ext-st-to-sb" id="btn-ext-st-to-sb" onclick="startExtSync('st-to-sb')">
+        <span class="btn-label-main">Sync Extensions ST → SillyBunny</span>
+        <span class="btn-label-sub">Mirror third-party extension files</span>
+      </button>
+      <button class="btn-sync btn-ext-sb-to-st" id="btn-ext-sb-to-st" onclick="startExtSync('sb-to-st')">
+        <span class="btn-label-main">Sync Extensions SillyBunny → ST</span>
+        <span class="btn-label-sub">Mirror third-party extension files</span>
       </button>
     </div>
-    <p class="ext-note">Installs missing extensions into SillyBunny from their GitHub sources. Safe to run multiple times.</p>
+    <p class="ext-note">Syncs from <code>public/scripts/extensions/third-party</code> (with fallback detection). Safe to run multiple times.</p>
   </div>
 
   <div class="log-card">
@@ -439,7 +452,8 @@
     function setBtnsDisabled(disabled) {
       document.getElementById('btn-st-to-sb').disabled = disabled;
       document.getElementById('btn-sb-to-st').disabled = disabled;
-      document.getElementById('btn-ext').disabled = disabled;
+      document.getElementById('btn-ext-st-to-sb').disabled = disabled;
+      document.getElementById('btn-ext-sb-to-st').disabled = disabled;
     }
 
     async function browse(inputId) {
@@ -454,7 +468,7 @@
       }
     }
 
-    function startExtSync() {
+    function startExtSync(direction) {
       const stPath = document.getElementById('st-path').value.trim();
       const sbPath = document.getElementById('sb-path').value.trim();
 
@@ -463,15 +477,26 @@
         return;
       }
 
-      const confirmed = confirm(`Are you sure you want to sync extensions from SillyTavern → SillyBunny?\n\nMissing extensions will be cloned from GitHub. Already-installed extensions will be skipped.`);
+      let source, destination, label;
+      if (direction === 'st-to-sb') {
+        source = stPath;
+        destination = sbPath;
+        label = 'SillyTavern → SillyBunny';
+      } else {
+        source = sbPath;
+        destination = stPath;
+        label = 'SillyBunny → SillyTavern';
+      }
+
+      const confirmed = confirm(`Are you sure you want to sync third-party extensions: ${label}?\n\nThis copies newer files from source to destination and keeps newer destination files untouched.`);
       if (!confirmed) return;
 
-      appendLog('info', '══════ Starting extension sync: SillyTavern → SillyBunny ══════');
+      appendLog('info', `══════ Starting extension sync: ${label} ══════`);
 
       setBtnsDisabled(true);
       setStatus('running');
 
-      const params = new URLSearchParams({ source: stPath, destination: sbPath });
+      const params = new URLSearchParams({ source, destination });
       const es = new EventSource(`/api/sync-extensions?${params}`);
 
       es.onmessage = (e) => {

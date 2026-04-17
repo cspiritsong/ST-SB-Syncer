@@ -28,13 +28,22 @@ Then open **http://localhost:3000** in your browser.
 3. Click either sync button:
    - **Copy ST → SillyBunny** — SillyTavern is the source
    - **Copy SillyBunny → ST** — SillyBunny is the source
-4. Watch the log window for real-time progress and a final summary
+4. For third-party extension code, use one of the **Sync Extensions** buttons
+   - **Sync Extensions ST → SillyBunny**
+   - **Sync Extensions SillyBunny → ST**
+   
+   This mirrors extension files from `public/scripts/extensions/third-party` (with fallback path detection).
+5. Watch the log window for real-time progress and a final summary
 
 ## What gets synced
 
 Files and folders copied from `data/default-user/` in the source to `data/default-user/` in the destination:
 
 `characters`, `chats`, `group chats`, `groups`, `extensions`, `worlds`, `settings.json`, `secrets.json`, `themes`, `backgrounds`, `User Avatars`, `assets`, `instruct`, `context`, `QuickReplies`, `sysprompt`, `OpenAI Settings`, `KoboldAI Settings`, `NovelAI Settings`, `TextGen Settings`, `user`, `vectors`
+
+Third-party extension code is synced separately from:
+
+`public/scripts/extensions/third-party`
 
 ## Merge behaviour
 

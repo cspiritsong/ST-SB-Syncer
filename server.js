@@ -1,7 +1,7 @@
 const express = require('express');
 const fsp = require('fs').promises;
 const path = require('path');
-const { execFile, exec } = require('child_process');
+const { execFile } = require('child_process');
 
 const app = express();
 const PORT = 3000;
@@ -39,6 +39,25 @@ function expandPath(p) {
 
 function sse(res, type, message) {
   res.write(`data: ${JSON.stringify({ type, message })}\n\n`);
+}
+
+async function firstExistingDir(base, relPaths) {
+  const tried = [];
+
+  for (const relPath of relPaths) {
+    const candidate = path.join(base, ...relPath);
+    tried.push(candidate);
+    try {
+      const stat = await fsp.stat(candidate);
+      if (stat.isDirectory()) {
+        return { dir: candidate, tried };
+      }
+    } catch {
+      // Ignore and keep trying
+    }
+  }
+
+  return { dir: null, tried };
 }
 
 async function copyFile(srcPath, dstPath, label, send) {
@@ -178,7 +197,7 @@ app.get('/api/sync', async (req, res) => {
   res.end();
 });
 
-// SSE endpoint — clones missing extensions from their GitHub origins
+// SSE endpoint — syncs third-party extension code folders
 app.get('/api/sync-extensions', async (req, res) => {
   const { source, destination } = req.query;
 
@@ -195,90 +214,67 @@ app.get('/api/sync-extensions', async (req, res) => {
     return res.end();
   }
 
-  const srcExtDir = path.join(expandPath(source), 'data', 'default-user', 'extensions');
-  const dstExtDir = path.join(expandPath(destination), 'data', 'default-user', 'extensions');
+  const srcRoot = expandPath(source);
+  const dstRoot = expandPath(destination);
 
-  try {
-    await fsp.access(srcExtDir);
-  } catch {
-    send('error', `Source extensions folder not found: ${srcExtDir}`);
+  const extensionDirCandidates = [
+    ['public', 'scripts', 'extensions', 'third-party'],
+    ['public', 'scripts', 'extensions', 'third_party'],
+  ];
+
+  const srcResolved = await firstExistingDir(srcRoot, extensionDirCandidates);
+  if (!srcResolved.dir) {
+    send('error', 'Source third-party extension folder not found.');
+    send('error', `Checked: ${srcResolved.tried.join(' | ')}`);
     send('done', '');
     return res.end();
   }
 
-  await fsp.mkdir(dstExtDir, { recursive: true });
+  const dstResolved = await firstExistingDir(dstRoot, extensionDirCandidates);
+  const dstExtDir = dstResolved.dir || path.join(dstRoot, ...extensionDirCandidates[0]);
+  const srcExtDir = srcResolved.dir;
+
+  try {
+    await fsp.access(srcExtDir);
+    await fsp.mkdir(dstExtDir, { recursive: true });
+  } catch (err) {
+    send('error', `Unable to prepare extension folders: ${err.message}`);
+    send('done', '');
+    return res.end();
+  }
 
   send('info', `Source:      ${srcExtDir}`);
   send('info', `Destination: ${dstExtDir}`);
+  send('info', 'Mode: copy newer files only (safe merge)');
   send('info', '─'.repeat(60));
 
   const entries = await fsp.readdir(srcExtDir, { withFileTypes: true });
-  const folders = entries.filter(e => e.isDirectory());
+  let totalCopied = 0, totalSkipped = 0, totalErrors = 0;
 
-  let cloned = 0, skipped = 0, manual = 0;
-
-  for (const folder of folders) {
-    const name = folder.name;
-    const gitConfigPath = path.join(srcExtDir, name, '.git', 'config');
-
-    let url = null;
-    try {
-      const configText = await fsp.readFile(gitConfigPath, 'utf8');
-      const match = configText.match(/\[remote "origin"\][^\[]*url\s*=\s*(\S+)/s);
-      if (match) url = match[1].trim();
-    } catch {
-      // No .git/config — not a git repo
-    }
-
-    if (!url) {
-      send('warn', `⚠ No GitHub URL found for: ${name} — install manually`);
-      manual++;
+  for (const entry of entries) {
+    if (entry.name === '.gitkeep') {
       continue;
     }
 
-    const dstFolder = path.join(dstExtDir, name);
-    let dstExists = false;
-    try {
-      await fsp.access(dstFolder);
-      dstExists = true;
-    } catch { /* doesn't exist */ }
+    const srcPath = path.join(srcExtDir, entry.name);
+    const dstPath = path.join(dstExtDir, entry.name);
 
-    if (dstExists) {
-      // Check if destination has a git remote URL
-      const dstGitConfigPath = path.join(dstFolder, '.git', 'config');
-      let dstHasGit = false;
-      try {
-        await fsp.access(dstGitConfigPath);
-        dstHasGit = true;
-      } catch { /* no .git/config */ }
-
-      if (!dstHasGit) {
-        send('warn', `⚠ Skipped (no git config, may be custom): ${name}`);
-        skipped++;
-        continue;
-      }
-
-      // Has git config — delete and reclone
-      send('info', `Reinstalling: ${name}`);
-      await fsp.rm(dstFolder, { recursive: true, force: true });
+    if (entry.isDirectory()) {
+      const r = await copyDir(srcPath, dstPath, `extensions/${entry.name}`, send);
+      totalCopied += r.copied;
+      totalSkipped += r.skipped;
+      totalErrors += r.errors;
+    } else {
+      const r = await copyFile(srcPath, dstPath, `extensions/${entry.name}`, send);
+      if (r === 'copied') totalCopied++;
+      else if (r === 'skipped') totalSkipped++;
+      else totalErrors++;
     }
-
-    await new Promise((resolve) => {
-      exec(`git clone ${url} "${dstFolder}"`, (err) => {
-        if (err) {
-          send('error', `Error cloning ${name}: ${err.message.split('\n')[0]}`);
-        } else {
-          send('copy', `Cloned: ${name}`);
-          cloned++;
-        }
-        resolve();
-      });
-    });
   }
 
   send('info', '─'.repeat(60));
-  const manualPart = manual > 0 ? ` | Manual install needed: ${manual}` : '';
-  send('summary', `Done — Cloned: ${cloned} | Skipped: ${skipped}${manualPart}`);
+  const errPart = totalErrors > 0 ? ` | Errors: ${totalErrors}` : '';
+  send('summary', `Done — Copied: ${totalCopied} | Skipped: ${totalSkipped}${errPart}`);
   send('done', '');
   res.end();
 });
