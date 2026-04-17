@@ -1,0 +1,60 @@
+<div id="st-sb-syncer-container">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b><i class="fa-solid fa-arrows-rotate"></i> ST ↔ SB Syncer</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+        </div>
+        <div class="inline-drawer-content">
+            <div class="sync-header">
+                <span class="status-indicator" id="stsb-status-dot"></span>
+                Mirror data between SillyTavern &amp; SillyBunny
+            </div>
+
+            <div class="path-group">
+                <div class="path-row">
+                    <span class="path-label">SillyTavern</span>
+                    <input type="text" class="path-input text_pole" id="stsb-st-path" placeholder="/path/to/SillyTavern" spellcheck="false">
+                    <button class="btn-detect menu_button" id="stsb-detect-st" title="Auto-detect this app's path">Detect</button>
+                </div>
+                <div class="path-row">
+                    <span class="path-label">SillyBunny</span>
+                    <input type="text" class="path-input text_pole" id="stsb-sb-path" placeholder="/path/to/SillyBunny" spellcheck="false">
+                    <button class="btn-detect menu_button" id="stsb-detect-sb" title="Auto-detect this app's path">Detect</button>
+                </div>
+            </div>
+
+            <div class="sync-section">
+                <div class="sync-section-title">Profile &amp; Chat Data</div>
+                <div class="sync-buttons">
+                    <button class="btn-sync btn-st-to-sb" id="stsb-sync-st-to-sb">
+                        <span class="btn-label-main">ST → SillyBunny</span>
+                        <span class="btn-label-sub">SillyTavern is source</span>
+                    </button>
+                    <button class="btn-sync btn-sb-to-st" id="stsb-sync-sb-to-st">
+                        <span class="btn-label-main">SillyBunny → ST</span>
+                        <span class="btn-label-sub">SillyBunny is source</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sync-section">
+                <div class="sync-section-title">Third-Party Extensions</div>
+                <div class="sync-buttons">
+                    <button class="btn-sync btn-ext-st-to-sb" id="stsb-ext-st-to-sb">
+                        <span class="btn-label-main">Ext ST → SillyBunny</span>
+                        <span class="btn-label-sub">Mirror extension files</span>
+                    </button>
+                    <button class="btn-sync btn-ext-sb-to-st" id="stsb-ext-sb-to-st">
+                        <span class="btn-label-main">Ext SillyBunny → ST</span>
+                        <span class="btn-label-sub">Mirror extension files</span>
+                    </button>
+                </div>
+                <p class="ext-note">Syncs from <code>public/scripts/extensions/third-party</code></p>
+            </div>
+
+            <div class="log-area" id="stsb-log">
+                <span class="log-placeholder">Ready — detect paths and click sync.</span>
+            </div>
+        </div>
+    </div>
+</div>
