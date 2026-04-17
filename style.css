@@ -1,0 +1,8 @@
+.stsb-syncer-settings .inline-drawer-content p {
+    margin: 8px 0;
+    color: var(--SmartThemeBodyColor);
+}
+
+.stsb-syncer-settings small {
+    opacity: 0.5;
+}

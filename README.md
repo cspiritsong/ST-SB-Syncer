@@ -1,26 +1,45 @@
 # ST-SB Syncer
 
-A tool that syncs data between SillyTavern and SillyBunny. Available as a standalone app and as a SillyTavern/SillyBunny extension.
+A tool that syncs data between SillyTavern and SillyBunny. Available as a standalone app and as a work-in-progress SillyTavern/SillyBunny extension.
 
-## Extension (Recommended)
+## Extension (Work In Progress — Stage 1)
 
-Install as a third-party extension in either SillyTavern or SillyBunny:
+The extension is currently at Stage 1: a minimal drawer that proves installability.
 
-1. Enable server plugins in `config.yaml`:
-   ```yaml
-   enableServerPlugins: true
-   ```
-2. In the Extensions panel, click **Install Extension** and paste the repo URL:
+### Current status
+
+- Stage 1: Drawer appears after install — **in progress**
+- Stage 2: Persistent settings — **not started**
+- Stage 3: Host path detection — **not started**
+- Stage 4: Capability probe — **not started**
+- Stage 5: Architecture decision — **not started**
+- Stage 6: Real sync logic — **not started**
+
+See `docs/HANDOFF-BRIEF.md` for the full rebuild plan and stage gates.
+
+### Install (when ready for testing)
+
+1. In SillyTavern or SillyBunny, open the Extensions panel
+2. Click **Install Extension**
+3. Paste the repo URL:
    ```
    https://github.com/cspiritsong/ST-SB-Syncer
    ```
-3. Restart the app. A new **ST ↔ SB Syncer** panel appears in Extensions.
-4. Click **Detect** to auto-fill paths, or type them manually.
-5. Click a sync button to mirror data.
+4. Refresh the page
+5. Look for **ST ↔ SB Syncer** in the right-side Extensions panel
 
-The extension installs both the client-side UI (loaded as a third-party extension) and the server plugin (placed in the host's `plugins/` directory) which provides the filesystem sync API.
+### Rebuild documentation
 
-## Standalone App (Fallback)
+- `docs/INDEX.md` — Start here. Reading order and placeholder map.
+- `docs/HANDOFF-BRIEF.md` — What went wrong, what to do first, mistakes to avoid.
+- `docs/CHECKLIST.md` — Stage-by-stage execution map with gates.
+- `docs/FULL-SPEC.md` — Full specification with rationale, risk register, recovery steps.
+
+### Previous extension attempt
+
+The `extension/` directory contains a previous prototype that is **not install-correct** for standard third-party extension flow. It is kept as reference material only. Do not treat it as the base to extend.
+
+## Standalone App (Currently the working product)
 
 ### Requirements
 

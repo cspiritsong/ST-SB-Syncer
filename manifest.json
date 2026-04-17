@@ -1,0 +1,11 @@
+{
+    "display_name": "ST-SB Syncer",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "cspiritsong",
+    "version": "1.0.0",
+    "homePage": "https://github.com/cspiritsong/ST-SB-Syncer"
+}
