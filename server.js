@@ -39,6 +39,7 @@ function expandPath(p) {
 
 function sse(res, type, message) {
   res.write(`data: ${JSON.stringify({ type, message })}\n\n`);
+  if (typeof res.flush === 'function') res.flush();
 }
 
 async function firstExistingDir(base, relPaths) {
@@ -98,6 +99,9 @@ async function copyDir(srcDir, dstDir, label, send) {
       const lbl = `${label}/${entry.name}`;
 
       if (entry.isDirectory()) {
+        if (entry.name === '.git' || entry.name === 'node_modules') {
+          continue;
+        }
         const r = await copyDir(src, dst, lbl, send);
         copied += r.copied; skipped += r.skipped; errors += r.errors;
       } else {
@@ -264,7 +268,7 @@ app.get('/api/sync-extensions', async (req, res) => {
   let totalCopied = 0, totalSkipped = 0, totalErrors = 0;
 
   for (const entry of entries) {
-    if (entry.name === '.gitkeep') {
+    if (entry.name === '.gitkeep' || entry.name === '.git' || entry.name === 'node_modules') {
       continue;
     }
 
