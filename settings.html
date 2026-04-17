@@ -11,6 +11,14 @@
                 <button id="stsb-refresh" class="menu_button" title="Recheck connection"><i class="fa-solid fa-rotate"></i></button>
             </div>
 
+            <div class="stsb-start-hint" id="stsb-start-hint" style="display:none;">
+                <div class="stsb-start-row">
+                    <input id="stsb-repo-path" type="text" class="text_pole" placeholder="ST-SB-Syncer repo path" spellcheck="false">
+                    <button id="stsb-copy-cmd" class="menu_button" title="Copy start command to clipboard"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+                <small>Paste the command into a terminal to start the sync app, then click <i class="fa-solid fa-rotate"></i> to reconnect.</small>
+            </div>
+
             <div class="stsb-syncer-path-group">
                 <label for="stsb_st_path"><strong>SillyTavern Path</strong></label>
                 <input id="stsb_st_path" type="text" class="text_pole" placeholder="/path/to/SillyTavern" spellcheck="false">

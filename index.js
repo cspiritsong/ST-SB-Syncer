@@ -110,13 +110,25 @@ async function checkEngine() {
             if (data.status === 'ok') {
                 setStatus('ok');
                 document.getElementById('stsb-engine-msg').textContent = 'Sync app is running.';
+                document.getElementById('stsb-start-hint').style.display = 'none';
                 return true;
             }
         }
     } catch {}
     setStatus('down');
-    document.getElementById('stsb-engine-msg').textContent = 'Sync app is not running. Start it with: npm start';
+    document.getElementById('stsb-engine-msg').textContent = 'Sync app is not running.';
+    document.getElementById('stsb-start-hint').style.display = 'block';
     return false;
+}
+
+function copyStartCommand() {
+    const repoPath = document.getElementById('stsb-repo-path').value.trim();
+    const cmd = repoPath ? `cd ${repoPath} && npm start` : 'cd /path/to/ST-SB-Syncer && npm start';
+    navigator.clipboard.writeText(cmd).then(() => {
+        toastr.success('Command copied to clipboard.');
+    }).catch(() => {
+        toastr.error('Failed to copy. Select and copy manually.');
+    });
 }
 
 function startSync(endpoint, direction) {
@@ -193,6 +205,7 @@ jQuery(async () => {
         $('#stsb-ext-st-to-sb').on('click', () => startSync('sync-extensions', 'st-to-sb'));
         $('#stsb-ext-sb-to-st').on('click', () => startSync('sync-extensions', 'sb-to-st'));
         $('#stsb-refresh').on('click', checkEngine);
+        $('#stsb-copy-cmd').on('click', copyStartCommand);
 
         console.log(`[${extensionName}] Loaded successfully.`);
     } catch (error) {

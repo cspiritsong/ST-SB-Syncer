@@ -23,6 +23,30 @@
     margin: 12px 0;
 }
 
+.stsb-start-hint {
+    margin-bottom: 12px;
+    padding: 8px;
+    border: 1px dashed var(--SmartThemeBorderColor);
+    border-radius: 4px;
+    background: var(--black30a, rgba(0,0,0,0.3));
+}
+
+.stsb-start-hint small {
+    display: block;
+    margin-top: 4px;
+    opacity: 0.6;
+}
+
+.stsb-start-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.stsb-start-row .text_pole {
+    flex: 1;
+}
+
 .stsb-engine-status {
     display: flex;
     align-items: center;
