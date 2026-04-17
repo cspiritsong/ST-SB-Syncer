@@ -63,7 +63,13 @@ async function firstExistingDir(base, relPaths) {
 
 async function copyFile(srcPath, dstPath, label, send) {
   try {
-    const srcStat = await fsp.stat(srcPath);
+    let srcStat;
+    try {
+      srcStat = await fsp.stat(srcPath);
+    } catch (err) {
+      send('error', `Cannot read source: ${label} — ${err.code || err.message}`);
+      return 'error';
+    }
 
     try {
       const dstStat = await fsp.stat(dstPath);
@@ -75,13 +81,32 @@ async function copyFile(srcPath, dstPath, label, send) {
       // Destination doesn't exist — will copy
     }
 
-    await fsp.mkdir(path.dirname(dstPath), { recursive: true });
-    await fsp.copyFile(srcPath, dstPath);
-    await fsp.utimes(dstPath, srcStat.atime, srcStat.mtime);
+    try {
+      await fsp.mkdir(path.dirname(dstPath), { recursive: true });
+    } catch (err) {
+      if (err.code !== 'EEXIST') {
+        send('error', `Cannot create directory for: ${label} — ${err.message}`);
+        return 'error';
+      }
+    }
+
+    try {
+      await fsp.copyFile(srcPath, dstPath);
+    } catch (err) {
+      send('error', `Cannot copy: ${label} — ${err.code === 'EBUSY' ? 'File is locked (close the app and try again)' : err.message}`);
+      return 'error';
+    }
+
+    try {
+      await fsp.utimes(dstPath, srcStat.atime, srcStat.mtime);
+    } catch {
+      // Timestamp fix is non-critical, skip silently
+    }
+
     send('copy', `Copied: ${label}`);
     return 'copied';
   } catch (err) {
-    send('error', `Error copying ${label}: ${err.message}`);
+    send('error', `Unexpected error on ${label}: ${err.message}`);
     return 'error';
   }
 }

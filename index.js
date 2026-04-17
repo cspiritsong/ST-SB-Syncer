@@ -77,16 +77,44 @@ function onSbPathInput() {
     }
 }
 
+const MAX_LOG_ENTRIES = 500;
+
 function appendLog(type, message) {
     const log = document.getElementById('stsb-log');
     if (!log) return;
     const placeholder = log.querySelector('.stsb-log-placeholder');
     if (placeholder) placeholder.remove();
+
+    if (type === 'skip') {
+        const counter = document.getElementById('stsb-skip-counter');
+        if (counter) {
+            counter.textContent = String(parseInt(counter.textContent || '0', 10) + 1);
+            return;
+        }
+        const skipLine = document.createElement('div');
+        skipLine.className = 'stsb-log-entry';
+        skipLine.innerHTML = `<span class="stsb-log-time">${new Date().toLocaleTimeString('en-US', { hour12: false })}</span> <span class="stsb-log-msg stsb-log-skip">Skipped: <span id="stsb-skip-counter">1</span> files (up to date)</span>`;
+        log.appendChild(skipLine);
+        log.scrollTop = log.scrollHeight;
+        return;
+    }
+
+    const skipCounter = document.getElementById('stsb-skip-counter');
+    if (skipCounter) {
+        const parent = skipCounter.closest('.stsb-log-entry');
+        if (parent) parent.remove();
+    }
+
     const now = new Date().toLocaleTimeString('en-US', { hour12: false });
     const row = document.createElement('div');
     row.className = 'stsb-log-entry';
     row.innerHTML = `<span class="stsb-log-time">${now}</span> <span class="stsb-log-msg stsb-log-${type}">${message}</span>`;
     log.appendChild(row);
+
+    while (log.children.length > MAX_LOG_ENTRIES) {
+        log.removeChild(log.firstChild);
+    }
+
     log.scrollTop = log.scrollHeight;
 }
 
