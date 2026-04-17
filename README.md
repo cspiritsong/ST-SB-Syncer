@@ -1,89 +1,130 @@
 # ST-SB Syncer
 
-A tool that syncs data between SillyTavern and SillyBunny. Available as a standalone app and as a work-in-progress SillyTavern/SillyBunny extension.
+Mirror data between SillyTavern and SillyBunny so switching between them feels seamless.
 
-## Extension (Work In Progress — Stage 1)
+## Two ways to use it
 
-The extension is currently at Stage 1: a minimal drawer that proves installability.
+### Option A: Extension (recommended)
 
-### Current status
+Install inside SillyTavern or SillyBunny. The extension provides a UI with sync buttons. The standalone app runs in the background as the sync engine.
 
-- Stage 1: Drawer appears after install — **in progress**
-- Stage 2: Persistent settings — **not started**
-- Stage 3: Host path detection — **not started**
-- Stage 4: Capability probe — **not started**
-- Stage 5: Architecture decision — **not started**
-- Stage 6: Real sync logic — **not started**
+### Option B: Standalone app only
 
-See `docs/HANDOFF-BRIEF.md` for the full rebuild plan and stage gates.
+Run the app in a browser tab. Everything works from the web interface. No extension needed.
 
-### Install (when ready for testing)
+---
 
-1. In SillyTavern or SillyBunny, open the Extensions panel
-2. Click **Install Extension**
-3. Paste the repo URL:
-   ```
-   https://github.com/cspiritsong/ST-SB-Syncer
-   ```
-4. Refresh the page
-5. Look for **ST ↔ SB Syncer** in the right-side Extensions panel
+## Setup
 
-### Rebuild documentation
+### Step 1: Clone and install the app
 
-- `docs/INDEX.md` — Start here. Reading order and placeholder map.
-- `docs/HANDOFF-BRIEF.md` — What went wrong, what to do first, mistakes to avoid.
-- `docs/CHECKLIST.md` — Stage-by-stage execution map with gates.
-- `docs/FULL-SPEC.md` — Full specification with rationale, risk register, recovery steps.
-
-### Previous extension attempt
-
-The `extension/` directory contains a previous prototype that is **not install-correct** for standard third-party extension flow. It is kept as reference material only. Do not treat it as the base to extend.
-
-## Standalone App (Currently the working product)
-
-### Requirements
-
-- Node.js (v16 or later)
-
-### Setup
+You only do this once.
 
 ```bash
-cd ~/ST-SB-Syncer
+git clone https://github.com/cspiritsong/ST-SB-Syncer.git
+cd ST-SB-Syncer
 npm install
 ```
 
-### Running
+### Step 2: Start the sync app
+
+Every time you want to sync, run this in a terminal:
 
 ```bash
 npm start
 ```
 
-Then open **http://localhost:3000** in your browser.
+Leave it running. It provides the sync engine at `http://localhost:3000`.
 
-### Usage
+### Step 3 (extension only): Install the extension
 
-1. Set the paths to your SillyTavern and SillyBunny installations
-2. Click **Browse…** to pick a folder with a native dialog, or type the path directly
-3. Click either sync button:
-   - **Copy ST → SillyBunny** — SillyTavern is the source
-   - **Copy SillyBunny → ST** — SillyBunny is the source
-4. For third-party extension code, use one of the **Sync Extensions** buttons
-   - **Sync Extensions ST → SillyBunny**
-   - **Sync Extensions SillyBunny → ST**
-    
-   This mirrors extension files from `public/scripts/extensions/third-party` (with fallback path detection).
-5. Watch the log window for real-time progress and a final summary
+1. Open SillyTavern or SillyBunny
+2. Go to the Extensions panel
+3. Click **Install Extension**
+4. Paste: `https://github.com/cspiritsong/ST-SB-Syncer`
+5. Click Install
+6. Refresh the page
+7. Find **ST ↔ SB Syncer** in the Extensions panel on the right
+
+The extension needs the app running to sync. If the extension shows a red dot, start the app (Step 2) then click the refresh button.
+
+---
+
+## How to sync
+
+### Using the extension
+
+1. Open the ST ↔ SB Syncer drawer in Extensions
+2. Enter your SillyTavern path (e.g. `/Users/you/SillyTavern`)
+3. Enter your SillyBunny path — it auto-fills if the name matches
+4. Click a sync button:
+   - **ST → SillyBunny** or **SillyBunny → ST** for profiles, chats, settings, presets
+   - **Ext ST → SB** or **Ext SB → ST** for third-party extension code
+5. Watch the log for progress
+
+### Using the standalone app
+
+1. Run `npm start`
+2. Open `http://localhost:3000` in your browser
+3. Enter both paths
+4. Click a sync button
+5. Watch the log for progress
+
+---
 
 ## What gets synced
 
-Files and folders copied from `data/default-user/` in the source to `data/default-user/` in the destination:
+**Profile and chat data** (from `data/default-user/`):
 
-`characters`, `chats`, `group chats`, `groups`, `extensions`, `worlds`, `settings.json`, `secrets.json`, `themes`, `backgrounds`, `User Avatars`, `assets`, `instruct`, `context`, `QuickReplies`, `sysprompt`, `OpenAI Settings`, `KoboldAI Settings`, `NovelAI Settings`, `TextGen Settings`, `user`, `vectors`, `reasoning`, `movingUI`
+characters, chats, group chats, groups, extensions, worlds, settings.json, secrets.json, themes, backgrounds, User Avatars, assets, instruct, context, QuickReplies, sysprompt, OpenAI Settings, KoboldAI Settings, NovelAI Settings, TextGen Settings, user, vectors, reasoning, movingUI
 
-Third-party extension code is synced separately from:
+**Third-party extension code** (from `public/scripts/extensions/third-party`):
 
-`public/scripts/extensions/third-party`
+Synced separately because it lives in a different folder than profile data.
 
 ## Merge behaviour
 
-Files are **never blindly overwritten** — if a file already exists at the destination, the one with the newer modification date is kept. Older files are skipped.
+Files are **never blindly overwritten**. If a file already exists at the destination, the one with the newer modification date is kept. Older files are skipped.
+
+---
+
+## Architecture
+
+The extension is the UI layer. The standalone app is the sync engine. They work together:
+
+- Extension talks to the app at `http://localhost:3000`
+- The app does all the actual file mirroring
+- The extension shows status, logs, and buttons
+
+This split exists because a browser-side extension cannot directly copy files between two app installations. The standalone app can.
+
+---
+
+## Troubleshooting
+
+**Extension shows red dot / "Sync app is not running"**
+
+Start the app: open a terminal and run `npm start` from the ST-SB-Syncer directory. Then click the refresh button in the extension.
+
+**Extension installed but no drawer appears**
+
+Refresh the page. If still missing, check the browser console (F12) for errors.
+
+**Paths not auto-filling**
+
+Auto-fill works by swapping "SillyTavern" and "SillyBunny" in the path. If your install paths don't follow this pattern, type them manually.
+
+**Extension sync freezes**
+
+This was fixed in the latest version. Make sure you're on the newest release by clicking Update in the Extensions panel.
+
+---
+
+## Rebuild documentation
+
+For developers continuing this project:
+
+- `docs/INDEX.md` — Reading order and placeholder map
+- `docs/HANDOFF-BRIEF.md` — What went wrong, what to do first, mistakes to avoid
+- `docs/CHECKLIST.md` — Stage-by-stage execution map with gates
+- `docs/FULL-SPEC.md` — Full specification with rationale, risk register, recovery steps
