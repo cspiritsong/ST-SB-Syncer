@@ -6,3 +6,19 @@
 .stsb-syncer-settings small {
     opacity: 0.5;
 }
+
+.stsb-syncer-settings .stsb-syncer-path-group {
+    margin-bottom: 12px;
+}
+
+.stsb-syncer-settings .stsb-syncer-path-group label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--SmartThemeBodyColor);
+}
+
+.stsb-syncer-settings hr {
+    border: none;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    margin: 12px 0;
+}
