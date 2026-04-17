@@ -1,6 +1,6 @@
 {
   "name": "st-sb-syncer",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Sync data between SillyTavern and SillyBunny",
   "main": "server.js",
   "scripts": {

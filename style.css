@@ -4,7 +4,7 @@
 }
 
 .stsb-syncer-settings small {
-    opacity: 0.5;
+    opacity: 0.7;
 }
 
 .stsb-syncer-settings .stsb-syncer-path-group {
@@ -22,3 +22,95 @@
     border-top: 1px solid var(--SmartThemeBorderColor);
     margin: 12px 0;
 }
+
+.stsb-engine-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.stsb-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #555;
+    flex-shrink: 0;
+}
+
+.stsb-status-ok { background: #4ade80; }
+.stsb-status-down { background: #ef4444; }
+.stsb-status-running { background: #60a5fa; animation: stsb-pulse 1.2s infinite; }
+
+@keyframes stsb-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.stsb-sync-section {
+    margin-bottom: 12px;
+    padding: 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 6px;
+}
+
+.stsb-sync-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.5;
+    margin-bottom: 6px;
+}
+
+.stsb-sync-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.stsb-btn {
+    padding: 8px 6px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    transition: transform 0.1s, opacity 0.15s;
+}
+
+.stsb-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.stsb-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.stsb-btn-st { background: linear-gradient(135deg, #6d28d9, #a855f7); }
+.stsb-btn-sb { background: linear-gradient(135deg, #0e7490, #06b6d4); }
+.stsb-btn-ext-st { background: linear-gradient(135deg, #166534, #22c55e); }
+.stsb-btn-ext-sb { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+
+.stsb-log-area {
+    margin-top: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    background: var(--black30a, rgba(0,0,0,0.3));
+}
+
+.stsb-log-entry {
+    display: flex;
+    gap: 6px;
+}
+
+.stsb-log-time { opacity: 0.3; flex-shrink: 0; }
+.stsb-log-copy { color: #4ade80; }
+.stsb-log-skip { opacity: 0.3; }
+.stsb-log-info { color: #60a5fa; }
+.stsb-log-warn { color: #fb923c; }
+.stsb-log-error { color: #f87171; }
+.stsb-log-summary { color: #fbbf24; font-weight: 700; }
+.stsb-log-done { display: none; }

@@ -5,6 +5,12 @@
             <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
         </div>
         <div class="inline-drawer-content">
+            <div class="stsb-engine-status">
+                <span class="stsb-status-dot" id="stsb-status-dot"></span>
+                <small id="stsb-engine-msg">Checking sync app...</small>
+                <button id="stsb-refresh" class="menu_button" title="Recheck connection"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+
             <div class="stsb-syncer-path-group">
                 <label for="stsb_st_path"><strong>SillyTavern Path</strong></label>
                 <input id="stsb_st_path" type="text" class="text_pole" placeholder="/path/to/SillyTavern" spellcheck="false">
@@ -13,8 +19,26 @@
                 <label for="stsb_sb_path"><strong>SillyBunny Path</strong></label>
                 <input id="stsb_sb_path" type="text" class="text_pole" placeholder="/path/to/SillyBunny" spellcheck="false">
             </div>
-            <hr>
-            <p><small>Enter one path and the other will be suggested automatically. Both fields are always editable. Sync features coming soon.</small></p>
+
+            <div class="stsb-sync-section">
+                <div class="stsb-sync-section-title">Profile &amp; Chat Data</div>
+                <div class="stsb-sync-buttons">
+                    <button class="stsb-btn stsb-btn-st" id="stsb-sync-st-to-sb">ST → SillyBunny</button>
+                    <button class="stsb-btn stsb-btn-sb" id="stsb-sync-sb-to-st">SillyBunny → ST</button>
+                </div>
+            </div>
+
+            <div class="stsb-sync-section">
+                <div class="stsb-sync-section-title">Third-Party Extensions</div>
+                <div class="stsb-sync-buttons">
+                    <button class="stsb-btn stsb-btn-ext-st" id="stsb-ext-st-to-sb">Ext ST → SB</button>
+                    <button class="stsb-btn stsb-btn-ext-sb" id="stsb-ext-sb-to-st">Ext SB → ST</button>
+                </div>
+            </div>
+
+            <div class="stsb-log-area" id="stsb-log">
+                <span class="stsb-log-placeholder">Ready. Enter paths and click a sync button.</span>
+            </div>
         </div>
     </div>
 </div>

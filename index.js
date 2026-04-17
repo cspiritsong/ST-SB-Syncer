@@ -1,5 +1,6 @@
 const extensionName = 'ST-SB-Syncer';
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
+const ENGINE_URL = 'http://localhost:3000';
 
 const defaultSettings = Object.freeze({
     stPath: '',
@@ -76,6 +77,104 @@ function onSbPathInput() {
     }
 }
 
+function appendLog(type, message) {
+    const log = document.getElementById('stsb-log');
+    if (!log) return;
+    const placeholder = log.querySelector('.stsb-log-placeholder');
+    if (placeholder) placeholder.remove();
+    const now = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const row = document.createElement('div');
+    row.className = 'stsb-log-entry';
+    row.innerHTML = `<span class="stsb-log-time">${now}</span> <span class="stsb-log-msg stsb-log-${type}">${message}</span>`;
+    log.appendChild(row);
+    log.scrollTop = log.scrollHeight;
+}
+
+function setStatus(state) {
+    const dot = document.getElementById('stsb-status-dot');
+    if (!dot) return;
+    dot.className = 'stsb-status-dot' + (state ? (' stsb-status-' + state) : '');
+}
+
+function setBtnsDisabled(disabled) {
+    document.querySelectorAll('.stsb-syncer-settings .stsb-btn').forEach(btn => {
+        btn.disabled = disabled;
+    });
+}
+
+async function checkEngine() {
+    try {
+        const res = await fetch(`${ENGINE_URL}/api/ping`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'ok') {
+                setStatus('ok');
+                document.getElementById('stsb-engine-msg').textContent = 'Sync app is running.';
+                return true;
+            }
+        }
+    } catch {}
+    setStatus('down');
+    document.getElementById('stsb-engine-msg').textContent = 'Sync app is not running. Start it with: npm start';
+    return false;
+}
+
+function startSync(endpoint, direction) {
+    const stPath = String($('#stsb_st_path').val()).trim();
+    const sbPath = String($('#stsb_sb_path').val()).trim();
+
+    if (!stPath || !sbPath) {
+        toastr.error('Both paths must be filled in before syncing.');
+        return;
+    }
+
+    let source, destination, label;
+    if (direction === 'st-to-sb') {
+        source = stPath;
+        destination = sbPath;
+        label = 'SillyTavern → SillyBunny';
+    } else {
+        source = sbPath;
+        destination = stPath;
+        label = 'SillyBunny → SillyTavern';
+    }
+
+    const isExt = endpoint === 'sync-extensions';
+    const typeLabel = isExt ? 'extension' : 'profile';
+
+    const { Popup, POPUP_RESULT } = SillyTavern.getContext();
+    Popup.show.confirm(
+        `Sync ${typeLabel} data: ${label}?`,
+        'Newer files are copied. Existing newer files are kept untouched.'
+    ).then(result => {
+        if (result !== POPUP_RESULT.AFFIRMATIVE) return;
+
+        appendLog('info', `══════ Starting ${typeLabel} sync: ${label} ══════`);
+        setBtnsDisabled(true);
+        setStatus('running');
+
+        const params = new URLSearchParams({ source, destination });
+        const es = new EventSource(`${ENGINE_URL}/api/${endpoint}?${params}`);
+
+        es.onmessage = (e) => {
+            const { type, message } = JSON.parse(e.data);
+            appendLog(type, message);
+            if (type === 'done') {
+                es.close();
+                setBtnsDisabled(false);
+                setStatus('ok');
+            }
+        };
+
+        es.onerror = () => {
+            appendLog('error', 'Connection to sync app lost. Is it still running?');
+            es.close();
+            setBtnsDisabled(false);
+            setStatus('down');
+        };
+    });
+}
+
 jQuery(async () => {
     console.log(`[${extensionName}] Loading...`);
 
@@ -87,6 +186,13 @@ jQuery(async () => {
         $('#stsb_sb_path').on('input', onSbPathInput);
 
         loadSettings();
+        checkEngine();
+
+        $('#stsb-sync-st-to-sb').on('click', () => startSync('sync', 'st-to-sb'));
+        $('#stsb-sync-sb-to-st').on('click', () => startSync('sync', 'sb-to-st'));
+        $('#stsb-ext-st-to-sb').on('click', () => startSync('sync-extensions', 'st-to-sb'));
+        $('#stsb-ext-sb-to-st').on('click', () => startSync('sync-extensions', 'sb-to-st'));
+        $('#stsb-refresh').on('click', checkEngine);
 
         console.log(`[${extensionName}] Loaded successfully.`);
     } catch (error) {

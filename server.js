@@ -115,7 +115,19 @@ async function copyDir(srcDir, dstDir, label, send) {
   return { copied, skipped, errors };
 }
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/api/ping', (_req, res) => {
+  res.json({ status: 'ok', version: '1.3.0' });
+});
 
 // Opens a native macOS folder picker and returns the selected path
 app.get('/api/browse', (req, res) => {
