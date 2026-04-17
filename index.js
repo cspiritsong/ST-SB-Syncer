@@ -7,15 +7,16 @@ const defaultSettings = Object.freeze({
 });
 
 function getSettings() {
-    if (!extension_settings[extensionName]) {
-        extension_settings[extensionName] = structuredClone(defaultSettings);
+    const { extensionSettings } = SillyTavern.getContext();
+    if (!extensionSettings[extensionName]) {
+        extensionSettings[extensionName] = structuredClone(defaultSettings);
     }
     for (const key of Object.keys(defaultSettings)) {
-        if (!Object.hasOwn(extension_settings[extensionName], key)) {
-            extension_settings[extensionName][key] = defaultSettings[key];
+        if (!Object.hasOwn(extensionSettings[extensionName], key)) {
+            extensionSettings[extensionName][key] = defaultSettings[key];
         }
     }
-    return extension_settings[extensionName];
+    return extensionSettings[extensionName];
 }
 
 function loadSettings() {
@@ -26,6 +27,7 @@ function loadSettings() {
 
 function onPathInput() {
     const settings = getSettings();
+    const { saveSettingsDebounced } = SillyTavern.getContext();
     settings.stPath = String($('#stsb_st_path').val());
     settings.sbPath = String($('#stsb_sb_path').val());
     saveSettingsDebounced();
