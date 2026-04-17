@@ -33,6 +33,49 @@ function onPathInput() {
     saveSettingsDebounced();
 }
 
+function suggestPeerPath(sourcePath) {
+    if (!sourcePath) return '';
+    if (sourcePath.includes('SillyTavern')) {
+        return sourcePath.replace(/SillyTavern/g, 'SillyBunny');
+    }
+    if (sourcePath.includes('SillyBunny')) {
+        return sourcePath.replace(/SillyBunny/g, 'SillyTavern');
+    }
+    return '';
+}
+
+function onStPathInput() {
+    onPathInput();
+    const stPath = String($('#stsb_st_path').val());
+    const sbPath = String($('#stsb_sb_path').val());
+    if (stPath && !sbPath) {
+        const guess = suggestPeerPath(stPath);
+        if (guess) {
+            const settings = getSettings();
+            const { saveSettingsDebounced } = SillyTavern.getContext();
+            settings.sbPath = guess;
+            $('#stsb_sb_path').val(guess);
+            saveSettingsDebounced();
+        }
+    }
+}
+
+function onSbPathInput() {
+    onPathInput();
+    const sbPath = String($('#stsb_sb_path').val());
+    const stPath = String($('#stsb_st_path').val());
+    if (sbPath && !stPath) {
+        const guess = suggestPeerPath(sbPath);
+        if (guess) {
+            const settings = getSettings();
+            const { saveSettingsDebounced } = SillyTavern.getContext();
+            settings.stPath = guess;
+            $('#stsb_st_path').val(guess);
+            saveSettingsDebounced();
+        }
+    }
+}
+
 jQuery(async () => {
     console.log(`[${extensionName}] Loading...`);
 
@@ -40,8 +83,8 @@ jQuery(async () => {
         const settingsHtml = await $.get(`${extensionFolderPath}/settings.html`);
         $('#extensions_settings2').append(settingsHtml);
 
-        $('#stsb_st_path').on('input', onPathInput);
-        $('#stsb_sb_path').on('input', onPathInput);
+        $('#stsb_st_path').on('input', onStPathInput);
+        $('#stsb_sb_path').on('input', onSbPathInput);
 
         loadSettings();
 
